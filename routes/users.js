@@ -17,9 +17,15 @@ router.post('/', (req,res) => {
     
     user.name = req.body.username;
     user.password = req.body.password;
-
-    TryInsertUserToDB(res, user);
-   
+    
+    if(req.body.formType == "new")
+    {
+        TryInsertUserToDB(res, user);
+    }
+    else
+    {
+        TryDeleteUserFromDb(res,user);
+    }
 })
 
 function TryInsertUserToDB(res, user)
@@ -34,8 +40,28 @@ function TryInsertUserToDB(res, user)
         }
 
         db.collection("users").insertOne(user);
-        res.cookie("userData", user);
+        res.cookie("userData", user,{maxAge: 700000});
         res.send("User added");
+    })
+}
+
+function TryDeleteUserFromDb(res, user)
+{
+    db.collection("users").findOne({name: user.name, password: user.password}, (err, result) => {
+        if(err) throw err;
+        if(result)
+        {
+            console.log(result);
+            db.collection("users").deleteOne(result);
+            db.collection("pokemons").deleteMany({user: result.name});
+            res.cookie("userData","",{maxAge:0});
+            
+            res.send("User deleted");
+        }
+        else
+        {
+            res.send("Incorrect credentials!");
+        }
     })
 }
 

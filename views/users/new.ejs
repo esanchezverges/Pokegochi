@@ -1,17 +1,19 @@
 <h2>New User</h2>
 <form action="/user" method="POST" name="NEW">
     <div>
-        <label>Username>:</label>
+        <label>Username:</label>
         <input type="text" name="username">
     </div>
     <div>
         <label>Password:</label>
         <input type="text" name="password">
+        <input hidden="true" name="formType" value="new">
     </div>
     <div>
         <a href="/user">Cancel</a>
         <button type="submit">Add</button>
     </div>
+   
 </form>
 
 <h2>Delete User</h2>
@@ -23,6 +25,7 @@
     <div>
         <label>Password:</label>
         <input type="text" name="password">
+        <input hidden="true" name="formType" value="delete">
     </div>
     <div>
         <a href="/user">Cancel</a>

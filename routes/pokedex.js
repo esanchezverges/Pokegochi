@@ -3,12 +3,17 @@ const express = require("express");
 const router = express.Router();
 const Pokemon = require('../models/pokemon');
 const https = require("https");
-const db = require("../public/dbConnect")
+const db = require("../public/dbConnect");
+const { send } = require("process");
 const pokemonRequestRoute = 'https://pokeapi.co/api/v2/pokemon/';
-const cookieParser = require("cookie-parser");
+
 
 router.get('/', (req,res) => {
-    res.render("pokedex/index");
+    db.collection("pokemons").find({user: req.cookies['userData'].name}).toArray((err,results) =>{
+        if(err) throw err;
+        console.log(results);
+        res.send("Pokemons: " + JSON.stringify(results));
+    });
 })
 
 router.get('/new',(req,res) => {
