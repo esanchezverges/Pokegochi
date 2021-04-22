@@ -14,7 +14,6 @@ router.get('/', (req,res) => {
     {
         db.collection("pokemons").find({user: req.cookies['userData'].name}).toArray((err,results) =>{
             if(err) throw err;
-            //console.log(results);
             res.render('pokedex/index', {pokemons: results});
         });
     }catch

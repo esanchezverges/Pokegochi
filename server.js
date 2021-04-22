@@ -12,6 +12,7 @@ const cookieParser = require('cookie-parser');
 const indexRouter = require('./routes/index');
 const pokedexRouter = require('./routes/pokedex');
 const userRouter = require('./routes/users');
+const playRouter = require('./routes/play');
 
 app.set('view engine', 'ejs');
 app.set('views',__dirname+'/views');
@@ -25,5 +26,6 @@ app.use(cookieParser());
 app.use('/', indexRouter);
 app.use('/pokedex', pokedexRouter);
 app.use('/user', userRouter);
+app.use('/play', playRouter);
 
 app.listen(process.env.PORT || 3000);

@@ -30,17 +30,23 @@ router.post('/', (req,res) => {
 function TryInsertUserToDB(res, user)
 {
    
-    db.collection("users").countDocuments({name: user.name}, (err,result) => {
+    db.collection("users").findOne({name: user.name}, (err,result) => {
         if(err) throw err;
         if(result)
         {
-            res.status(500).send("User already exists!");
-            return;
+            if(result.password != user.password)
+                res.status(500).send("Incorrect credentials for user!");
+            else
+            {
+                res.cookie("userData", user);
+                res.status(200).send("User logged in");
+            }
+                return;
         }
 
         db.collection("users").insertOne(user);
         res.cookie("userData", user);
-        res.send("User added");
+        res.status(200).send("User added");
     })
 }
 
