@@ -1,12 +1,11 @@
 
 const express = require("express");
 const router = express.Router();
-const Pokemon = require('../models/pokemon');
 const https = require("https");
 const db = require("../public/dbConnect");
 const { send } = require("process");
-const pokemon = require("../models/pokemon");
 const pokemonRequestRoute = 'https://pokeapi.co/api/v2/pokemon/';
+const pokemonSpeciesRequestRoute = "https://pokeapi.co/api/v2/pokemon-species/";
 
 
 router.get('/', (req,res) => {
@@ -27,42 +26,64 @@ router.get('/new',(req,res) => {
 })
 
 router.post('/',(req,res) => {
-    https.get(pokemonRequestRoute + req.body.pokemonName.toLowerCase(), (resp) => {
+    https.get(pokemonSpeciesRequestRoute + req.body.pokemonName.toLowerCase(), (resp) => {
         let pokemonData = '';
-        let pokemonObj = new Object;
-        let user = req.cookies['userData'];
         
         resp.on('data', (chunk) => {
             pokemonData += chunk;
         });
 
         resp.on('end',() => {
-            if(!user)
-            {
-                res.status(500).send("User not logged in");
-                return;    
-            }
-            else if(pokemonData == "Not Found")
+            if(pokemonData == "Not Found")
             {
                 res.status(500).send("Pokemon not found");
                 return;
             }
             
-            
             pokemonData = JSON.parse(pokemonData);
+            
+            if(pokemonData.is_legendary)
+            {
+                res.send("You cannot add a legendary pokemon");
+                return;
+            }
+            else
+            {
+                https.get(pokemonRequestRoute + req.body.pokemonName.toLowerCase(), (resp) => {
+                    let pokemonData = '';
+                    let pokemonObj = new Object;
+                    let user = req.cookies['userData'];
+                    
+                    resp.on('data', (chunk) => {
+                        pokemonData += chunk;
+                    });
+            
+                    resp.on('end',() => {
+                        if(!user)
+                        {
+                            res.status(500).send("User not logged in");
+                            return;    
+                        }
                         
-            pokemonObj = CreatePokemonWithUser(pokemonData, user.name);
-            InsertPokemonDatabase(pokemonObj);
-
-            //console.log(pokemonObj);
-            res.status(200).send("Pokemon added: " + JSON.stringify(pokemonObj));
+                        pokemonData = JSON.parse(pokemonData);
+                                    
+                        pokemonObj = CreatePokemonWithUser(pokemonData, user.name);
+                        InsertPokemonDatabase(pokemonObj);
+            
+                        res.status(200).send("Pokemon added: " + JSON.stringify(pokemonObj));
+                    })
+            
+                }).on("error",(err) => {
+                    console.log("Error: " + err);
+                    res.status(500).send(err);
+                });
+            }
         })
-
-    }).on("error",(err) => {
-        console.log("Error: " + err);
-        res.status(500).send(err);
     });
+    
 })
+
+
 
 function CreatePokemonWithUser(pokemonData, user)
 {
@@ -82,7 +103,6 @@ function CreatePokemonWithUser(pokemonData, user)
     {
         pokemonObj.types[i] = pokemonData.types[i].type.name;
     }
-    console.log(pokemonObj);
     return pokemonObj;
 }
 

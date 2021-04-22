@@ -1,19 +1,12 @@
-<h1>With who will you fight against ""?</h1>
-<h2>Round ""</h2>
-<% pokemons.forEach(pokemon => { %>
-    <% pokemon %>
-    <div>
-        <div><h3><%= pokemon.name %></h3></div>  
-        <div>HP: <%= pokemon.stats.hp %></div>
-        <div>Attack: <%= pokemon.stats.attack %></div>
-        <div>Defence: <%= pokemon.stats.defence %></div>
-        <div>Speed: <%= pokemon.stats.speed %></div>
-        <div>Types:
-            <% pokemon.types.forEach(type => { %>
-                 <%= type %>
-            <% }); %>
+<h1>With who will you fight against <%= enemy.name %>?</h1>
+<h2>Consecutive wins <%= game.rounds %></h2>
+<form action="/play" method="POST">
+    <% pokemons.forEach(pokemon => { %>
+        <% pokemon %>
+        <div>
+            <div><h3><%= pokemon.name %></h3></div>  
+            <div><button type="submit" name="pokemonSelected" value="<%= JSON.stringify(pokemon)%>">Fight with <%= pokemon.name %>!</button></div>
         </div>
-        <div><button>Fight with <%= pokemon.name %>!</button></div>
-    </div>
-
-<% }); %>
+    <% }); %>
+    <input hidden="true" name="enemy" value="<%= JSON.stringify(enemy)%>">
+</form>
