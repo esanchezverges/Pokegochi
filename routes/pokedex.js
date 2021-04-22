@@ -5,19 +5,26 @@ const Pokemon = require('../models/pokemon');
 const https = require("https");
 const db = require("../public/dbConnect");
 const { send } = require("process");
+const pokemon = require("../models/pokemon");
 const pokemonRequestRoute = 'https://pokeapi.co/api/v2/pokemon/';
 
 
 router.get('/', (req,res) => {
-    db.collection("pokemons").find({user: req.cookies['userData'].name}).toArray((err,results) =>{
-        if(err) throw err;
-        console.log(results);
-        res.send("Pokemons: " + JSON.stringify(results));
-    });
+    try
+    {
+        db.collection("pokemons").find({user: req.cookies['userData'].name}).toArray((err,results) =>{
+            if(err) throw err;
+            //console.log(results);
+            res.render('pokedex/index', {pokemons: results});
+        });
+    }catch
+    {
+        res.send("No pokemons or user logged in");
+    }
 })
 
 router.get('/new',(req,res) => {
-    res.render('pokedex/new', {pokemon: new Pokemon()});
+    res.render('pokedex/new');
 })
 
 router.post('/',(req,res) => {
@@ -36,13 +43,19 @@ router.post('/',(req,res) => {
                 res.status(500).send("User not logged in");
                 return;    
             }
-
+            else if(pokemonData == "Not Found")
+            {
+                res.status(500).send("Pokemon not found");
+                return;
+            }
+            
+            
             pokemonData = JSON.parse(pokemonData);
                         
             pokemonObj = CreatePokemonWithUser(pokemonData, user.name);
             InsertPokemonDatabase(pokemonObj);
 
-            console.log(pokemonObj);
+            //console.log(pokemonObj);
             res.status(200).send("Pokemon added: " + JSON.stringify(pokemonObj));
         })
 
@@ -63,9 +76,14 @@ function CreatePokemonWithUser(pokemonData, user)
     pokemonObj.stats.speed = pokemonData.stats[5].base_stat;
     pokemonObj.name = pokemonData.name;
     pokemonObj.sprite = pokemonData.sprites.front_default;
-    pokemonObj.types = pokemonData.types;
     pokemonObj.user = user;
+    pokemonObj.types = new Array();
     
+    for(let i = 0; i < pokemonData.types.length; i++)
+    {
+        pokemonObj.types[i] = pokemonData.types[i].type.name;
+    }
+    console.log(pokemonObj);
     return pokemonObj;
 }
 

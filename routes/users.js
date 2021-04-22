@@ -1,7 +1,6 @@
 
 const express = require("express");
 const router = express.Router();
-const cookieParser = require("cookie-parser");
 const db = require('../public/dbConnect');
 
 router.get('/new', (req,res) => {
@@ -40,7 +39,7 @@ function TryInsertUserToDB(res, user)
         }
 
         db.collection("users").insertOne(user);
-        res.cookie("userData", user,{maxAge: 700000});
+        res.cookie("userData", user);
         res.send("User added");
     })
 }
