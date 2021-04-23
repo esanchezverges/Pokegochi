@@ -26,9 +26,9 @@ router.get('/', (req,res) => {
                 searchCriteria += 1;
                 if(!gameCookies || userCookies.name != gameCookies.user)
                 {
-                    InitGame(res,userCookies);
+                    gameCookies = InitGame(res,userCookies);
                 }
-                if(gameCookies.rounds >= 5)
+                else if(gameCookies.rounds >= 5)
                 {
                     searchCriteria = legendaryPokemonArray[Math.floor(Math.random()*legendaryPokemonArray.length)];
                 }
@@ -42,7 +42,8 @@ router.get('/', (req,res) => {
                     resp.on('end',() => {      
                         pokemonData = JSON.parse(pokemonData);
                         pokemonData = CreateSimplePokemon(pokemonData);  
-                        console.log("Pokemon data    "+JSON.stringify(pokemonData));         
+                        console.log("Pokemon data    "+JSON.stringify(pokemonData));  
+                        console.log(gameCookies);       
                         res.render('play/index', {pokemons: results, game: gameCookies, enemy: pokemonData});
                     })
                 
@@ -89,6 +90,8 @@ router.post('/', (req,res) => {
             {
                 SetVariablesForLegendary(enemy,myPokemon.user);
                 db.collection("pokemons").insertOne(enemy);
+                gameCookies.rounds = 0;
+                res.cookie("Game", gameCookies);
                 res.send(enemy.name+" was captured!!! <br> Yow won the game!! <br> But there's more legendary pokemons out there... <br> Try again and let's see if you can catch'em all!");
             }
             else
@@ -105,10 +108,9 @@ function InitGame(res,user)
 {
     let game = new Object;
     game.rounds = 0;
-    game.userWon = false;
     game.user = user.name;
-
     res.cookie("Game",game);
+    return game;
 }
 
 function CreateSimplePokemon(pokemonData)
